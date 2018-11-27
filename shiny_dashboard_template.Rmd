@@ -1,0 +1,89 @@
+---
+title: "shiny"
+author: "Courtney Johnson"
+date: "November 27, 2018"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+runtime: shiny
+---
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(tidyverse)
+library(viridis)
+library(p8105.datasets)
+
+library(plotly)
+```
+
+Column {.sidebar}
+-----------------------------------------------------------------------
+
+```{r}
+data("nyc_airbnb")
+
+nyc_airbnb = 
+  nyc_airbnb %>% 
+  mutate(rating = review_scores_location / 2) %>%
+  select(boro = neighbourhood_group, neighbourhood, rating, price, room_type,
+         latitude, longitude) %>%
+  filter(!is.na(rating))
+
+boros = nyc_airbnb %>% distinct(boro) %>% pull()
+
+selectInput("boro_choice", label = h3("Select boro"),
+            choices = boros, selected = "Manhattan")
+```
+
+```{r}
+max_price = 1000
+min_price = nyc_airbnb %>% distinct(price) %>% min()
+
+sliderInput("price_range", label = h3("Choose price range"), min = min_price, 
+            max = max_price, value = c(100, 400))
+```
+
+```{r}
+room_choice = nyc_airbnb %>% distinct(room_type) %>% pull()
+
+radioButtons("room_choice", label = h3("Choose room type"),
+    choices = room_choice, 
+    selected = "Entire home/apt")
+```
+
+
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Chart A
+
+```{r}
+renderPrint({ 
+  input[["boro_choice"]]
+})
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Chart B
+
+```{r}
+renderPrint({ 
+  input[["price_range"]]
+})
+```
+
+### Chart C
+
+```{r}
+renderPrint({ 
+  input[["room_choice"]]
+})
+```
